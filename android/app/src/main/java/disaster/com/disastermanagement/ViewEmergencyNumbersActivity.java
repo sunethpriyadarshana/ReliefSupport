@@ -5,62 +5,56 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
-
-import java.util.ArrayList;
-
 /**
- * Created by WAKENSYS on 5/30/2017.
+ * Created by WAKENSYS on 6/2/2017.
  */
 
-public class ViewNeedCountChartActivity extends Activity {
+public class ViewEmergencyNumbersActivity extends Activity {
     Data data = new Data();
     DBOperations dbOperations = new DBOperations();
     NetworkStatChecker n = new NetworkStatChecker();
 
     Context context;
 
-    ImageView backButton;
-
-    LineChart needChart;
-    LineData needData;
-    LineDataSet needDataSet;
-
-    ArrayList<Entry> needCountList = new ArrayList<>();
-    ArrayList<String> methodNameList = new ArrayList<>();
-
+    ListView ViewEmergencyNumbersListView;
     TextView hiddenLayout;
+    SwipeRefreshLayout swiper;
 
     String lan = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.view_need_count_chart_layout);
-        context = ViewNeedCountChartActivity.this;
+        setContentView(R.layout.view_emergency_numbers_layout);
+        context = ViewEmergencyNumbersActivity.this;
 
         SharedPreferences sp = getSharedPreferences("language", 0);
         lan += sp.getString("lan", "1");
 
-        needChart = (LineChart) findViewById(R.id.needChart);
+        swiper = (SwipeRefreshLayout) findViewById(R.id.swiper);
+        swiper.setColorSchemeColors(data.getSWIPER_COLOR_LIST());
+        swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swiper.setRefreshing(true);
+                new GetEmergencyNumberList().execute();
+            }
+        });
+
+        ViewEmergencyNumbersListView = (ListView) findViewById(R.id.ViewEmergencyNumbersListView);
         hiddenLayout = (TextView) findViewById(R.id.hiddenLayout);
 
-        backButton = (ImageView) findViewById(R.id.backButton);
+        ImageView backButton = (ImageView) findViewById(R.id.backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,7 +62,7 @@ public class ViewNeedCountChartActivity extends Activity {
             }
         });
 
-        new GetNeedCountDetails().execute();
+        new GetEmergencyNumberList().execute();
     }
 
     @Override
@@ -82,7 +76,8 @@ public class ViewNeedCountChartActivity extends Activity {
         finish();
     }
 
-    class GetNeedCountDetails extends AsyncTask<String, Void, String[][]> {
+
+    class GetEmergencyNumberList extends AsyncTask<String, Void, String[][]> {
         boolean internetAvailable = false;
         ProgressDialog progressDialog;
 
@@ -107,7 +102,7 @@ public class ViewNeedCountChartActivity extends Activity {
         protected String[][] doInBackground(String... urls) {
             if(n.isConnected(context)){
                 this.internetAvailable = true;
-                String[][] res = dbOperations.getNeedCountDetails();
+                String[][] res = dbOperations.getEmergencyNumberList();
                 return res;
             }
             else{
@@ -120,65 +115,27 @@ public class ViewNeedCountChartActivity extends Activity {
         protected void onPostExecute(String[][] result) {
             if(result != null){
                 try{
-                    String[] needMethod = result[0];
-                    String[] needCount = result[1];
+                    String[] nameList = result[0];
+                    String[] numberList = result[1];
 
-                    needCountList.clear();
-                    methodNameList.clear();
+                    CustomEmergencyNumberAdapter customEmergencyNumberAdapter = new CustomEmergencyNumberAdapter(
+                            context,
+                            ViewEmergencyNumbersActivity.this,
 
-                    for(int k = 0; k < needMethod.length; k++){
-                        needCountList.add(new Entry(Integer.parseInt(needCount[k]), k));
-                        methodNameList.add(needMethod[k]);
-                    }
+                            nameList,
+                            numberList
+                    );
 
-                    needDataSet = new LineDataSet(needCountList, "");
-                    needDataSet.setValueTextColor(Color.parseColor("#ff8000"));
-                    needDataSet.setColor(Color.parseColor("#ff8000"));
-                    needDataSet.setFillColor(Color.parseColor("#FF8000"));
-
-                    needData = new LineData(methodNameList, needDataSet);
-                    needData.setValueTextColor(Color.parseColor("#FF8000"));
-
-                    needDataSet.setColors(ColorTemplate.JOYFUL_COLORS); //
-                    needDataSet.setDrawCubic(true);
-                    needDataSet.setDrawFilled(true);
-
-                    needChart.setData(needData);
-
-                    XAxis xAxis = needChart.getXAxis();
-                    xAxis.setTextColor(Color.parseColor("#FF8000"));
-
-                    YAxis yAxis1 = needChart.getAxisLeft();
-                    yAxis1.setTextColor(Color.parseColor("#FF8000"));
-
-                    YAxis yAxis2 = needChart.getAxisRight();
-                    yAxis2.setTextColor(Color.parseColor("#FF8000"));
-
-                    needChart.animateY(3000);
-                    switch (lan){
-                        case "1" :
-                            needChart.setDescription("Number of donations according to the request method");
-                            break;
-
-                        case "2" :
-                            needChart.setDescription("මාධ්\u200Dය අනුව අවශ්යතා ගණන");
-                            break;
-
-                        case "3" :
-                            needChart.setDescription("Number of requirements according to the request method");
-                            break;
-                    }
-                    needChart.setDescriptionTextSize(12f);
-                    needChart.setDescriptionColor(Color.parseColor("#ffffff"));
-                    needChart.setGridBackgroundColor(Color.TRANSPARENT);
+                    customEmergencyNumberAdapter.notifyDataSetChanged();
+                    ViewEmergencyNumbersListView.setAdapter(customEmergencyNumberAdapter);
 
                     hiddenLayout.setVisibility(View.GONE);
-                    needChart.setVisibility(View.VISIBLE);
+                    ViewEmergencyNumbersListView.setVisibility(View.VISIBLE);
                 }
                 catch (Exception e){
                     if(this.internetAvailable){
                         hiddenLayout.setVisibility(View.VISIBLE);
-                        needChart.setVisibility(View.GONE);
+                        ViewEmergencyNumbersListView.setVisibility(View.GONE);
                         switch (lan){
                             case "1" :
                                 Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
@@ -196,7 +153,7 @@ public class ViewNeedCountChartActivity extends Activity {
 
                     else{
                         hiddenLayout.setVisibility(View.VISIBLE);
-                        needChart.setVisibility(View.GONE);
+                        ViewEmergencyNumbersListView.setVisibility(View.GONE);
                         switch (lan){
                             case "1" :
                                 Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
@@ -216,7 +173,7 @@ public class ViewNeedCountChartActivity extends Activity {
 
             else if(this.internetAvailable){
                 hiddenLayout.setVisibility(View.VISIBLE);
-                needChart.setVisibility(View.GONE);
+                ViewEmergencyNumbersListView.setVisibility(View.GONE);
                 switch (lan){
                     case "1" :
                         Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
@@ -234,7 +191,7 @@ public class ViewNeedCountChartActivity extends Activity {
 
             else{
                 hiddenLayout.setVisibility(View.VISIBLE);
-                needChart.setVisibility(View.GONE);
+                ViewEmergencyNumbersListView.setVisibility(View.GONE);
                 switch (lan){
                     case "1" :
                         Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
@@ -252,6 +209,7 @@ public class ViewNeedCountChartActivity extends Activity {
 
             try{
                 progressDialog.dismiss();
+                swiper.setRefreshing(false);
             }
             catch(Exception ignored){}
         }
