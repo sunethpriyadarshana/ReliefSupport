@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,11 +45,16 @@ public class ViewHelpersCountChartActivity extends Activity{
     ArrayList<Entry> requirementCountList = new ArrayList<>();
     ArrayList<String> methodNameList = new ArrayList<>();
 
+    String lan = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_requirement_count_chart_layout);
         context = ViewHelpersCountChartActivity.this;
+
+        SharedPreferences sp = getSharedPreferences("language", 0);
+        lan += sp.getString("lan", "1");
 
         requirementChart = (LineChart) findViewById(R.id.requirementChart);
         hiddenLayout = (TextView) findViewById(R.id.hiddenLayout);
@@ -81,7 +87,19 @@ public class ViewHelpersCountChartActivity extends Activity{
 
         @Override
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(context, "Loading", "Please wait");
+            switch (lan){
+                case "1" :
+                    progressDialog = ProgressDialog.show(context, "Loading", "Please wait");
+                    break;
+
+                case "2" :
+                    progressDialog = ProgressDialog.show(context, "දත්ත ලැබෙමින් පවතී", "මඳක් ඉවසන්න");
+                    break;
+
+                case "3" :
+                    progressDialog = ProgressDialog.show(context, "Loading", "தயவு செய்து காத்திருங்கள்");
+                    break;
+            }
         }
 
         @Override
@@ -136,7 +154,21 @@ public class ViewHelpersCountChartActivity extends Activity{
                     yAxis2.setTextColor(Color.parseColor("#FF8000"));
 
                     requirementChart.animateY(3000);
-                    requirementChart.setDescription("Number of requirements according to the request method");
+
+                    switch (lan){
+                        case "1" :
+                            requirementChart.setDescription("Number of requirements according to the request method");
+                            break;
+
+                        case "2" :
+                            requirementChart.setDescription("මාධ්\u200Dය අනුව ආධාර ගණන");
+                            break;
+
+                        case "3" :
+                            requirementChart.setDescription("Number of requirements according to the request method");
+                            break;
+                    }
+
                     requirementChart.setDescriptionTextSize(12f);
                     requirementChart.setDescriptionColor(Color.parseColor("#ffffff"));
                     requirementChart.setGridBackgroundColor(Color.TRANSPARENT);
@@ -148,13 +180,37 @@ public class ViewHelpersCountChartActivity extends Activity{
                     if(this.internetAvailable){
                         hiddenLayout.setVisibility(View.VISIBLE);
                         requirementChart.setVisibility(View.GONE);
-                        Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                        switch (lan){
+                            case "1" :
+                                Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "2" :
+                                Toast.makeText(context, "දත්ත නොමැත", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "3" :
+                                Toast.makeText(context, "தகவல் எதனையும் பெறமுடியவில்லை", Toast.LENGTH_SHORT).show();
+                                break;
+                        }
                     }
 
                     else{
                         hiddenLayout.setVisibility(View.VISIBLE);
                         requirementChart.setVisibility(View.GONE);
-                        Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                        switch (lan){
+                            case "1" :
+                                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "2" :
+                                Toast.makeText(context, "අන්තර්ජාල සම්බන්ධතාවය පරික්ෂා කරන්න", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "3" :
+                                Toast.makeText(context, "இணைய இணைப்பை சரிபார்க்கவும்", Toast.LENGTH_SHORT).show();
+                                break;
+                        }
                     }
                 }
             }
@@ -162,13 +218,37 @@ public class ViewHelpersCountChartActivity extends Activity{
             else if(this.internetAvailable){
                 hiddenLayout.setVisibility(View.VISIBLE);
                 requirementChart.setVisibility(View.GONE);
-                Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                switch (lan){
+                    case "1" :
+                        Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "2" :
+                        Toast.makeText(context, "දත්ත නොමැත", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "3" :
+                        Toast.makeText(context, "தகவல் எதனையும் பெறமுடியவில்லை", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
 
             else{
                 hiddenLayout.setVisibility(View.VISIBLE);
                 requirementChart.setVisibility(View.GONE);
-                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                switch (lan){
+                    case "1" :
+                        Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "2" :
+                        Toast.makeText(context, "අන්තර්ජාල සම්බන්ධතාවය පරික්ෂා කරන්න", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "3" :
+                        Toast.makeText(context, "இணைய இணைப்பை சரிபார்க்கவும்", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
 
             try{

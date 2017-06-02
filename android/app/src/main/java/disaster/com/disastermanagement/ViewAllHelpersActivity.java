@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -31,11 +32,16 @@ public class ViewAllHelpersActivity extends Activity {
     SwipeRefreshLayout swiper;
     ImageView backButton;
 
+    String lan = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_all_helpers_layout);
         context = ViewAllHelpersActivity.this;
+
+        SharedPreferences sp = getSharedPreferences("language", 0);
+        lan += sp.getString("lan", "1");
 
         swiper = (SwipeRefreshLayout) findViewById(R.id.swiper);
         swiper.setColorSchemeColors(data.getSWIPER_COLOR_LIST());
@@ -78,7 +84,19 @@ public class ViewAllHelpersActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(context, "Loading", "Please wait");
+            switch (lan){
+                case "1" :
+                    progressDialog = ProgressDialog.show(context, "Loading", "Please wait");
+                    break;
+
+                case "2" :
+                    progressDialog = ProgressDialog.show(context, "දත්ත ලැබෙමින් පවතී", "මඳක් ඉවසන්න");
+                    break;
+
+                case "3" :
+                    progressDialog = ProgressDialog.show(context, "Loading", "தயவு செய்து காத்திருங்கள்");
+                    break;
+            }
         }
 
         @Override
@@ -136,13 +154,37 @@ public class ViewAllHelpersActivity extends Activity {
                     if(this.internetAvailable){
                         hiddenLayout.setVisibility(View.VISIBLE);
                         viewAllHelpersListView.setVisibility(View.GONE);
-                       Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                        switch (lan){
+                            case "1" :
+                                Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "2" :
+                                Toast.makeText(context, "දත්ත නොමැත", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "3" :
+                                Toast.makeText(context, "தகவல் எதனையும் பெறமுடியவில்லை", Toast.LENGTH_SHORT).show();
+                                break;
+                        }
                    }
 
                    else{
                         hiddenLayout.setVisibility(View.VISIBLE);
                         viewAllHelpersListView.setVisibility(View.GONE);
-                       Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                        switch (lan){
+                            case "1" :
+                                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "2" :
+                                Toast.makeText(context, "අන්තර්ජාල සම්බන්ධතාවය පරික්ෂා කරන්න", Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case "3" :
+                                Toast.makeText(context, "இணைய இணைப்பை சரிபார்க்கவும்", Toast.LENGTH_SHORT).show();
+                                break;
+                        }
                    }
                }
             }
@@ -150,13 +192,37 @@ public class ViewAllHelpersActivity extends Activity {
             else if(this.internetAvailable){
                 hiddenLayout.setVisibility(View.VISIBLE);
                 viewAllHelpersListView.setVisibility(View.GONE);
-                Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                switch (lan){
+                    case "1" :
+                        Toast.makeText(context, "No data found", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "2" :
+                        Toast.makeText(context, "දත්ත නොමැත", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "3" :
+                        Toast.makeText(context, "தகவல் எதனையும் பெறமுடியவில்லை", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
 
             else{
                 hiddenLayout.setVisibility(View.VISIBLE);
                 viewAllHelpersListView.setVisibility(View.GONE);
-                Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                switch (lan){
+                    case "1" :
+                        Toast.makeText(context, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "2" :
+                        Toast.makeText(context, "අන්තර්ජාල සම්බන්ධතාවය පරික්ෂා කරන්න", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "3" :
+                        Toast.makeText(context, "இணைய இணைப்பை சரிபார்க்கவும்", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
 
             try{
